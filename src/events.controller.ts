@@ -6,51 +6,51 @@ import {
   Delete,
   Param,
   Body,
+  HttpCode,
 } from '@nestjs/common';
+import { CreateEventDto } from './create-event.dto';
+import { UpdateEventDto } from './update-event.dto';
+import { Event } from './event.entity';
 
 @Controller('/events')
 export class EventsController {
+  private events: Event[] = [];
   @Get()
   findAllResource() {
-    return [
-      {
-        id: 1,
-        name: 'First Event',
-      },
-      {
-        id: 2,
-        name: 'Second Event',
-      },
-      {
-        id: 3,
-        name: 'Third Event',
-      },
-    ];
+    return this.events;
   }
 
   @Get(':id')
-  findOneResource(@Param('id') id: [string, number]) {
-    return {
-      id: id,
-      name: 'Second Event',
-    };
+  findOneResource(@Param('id') id) {
+    const event = this.events.find((event) => event.id === parseInt(id));
+    return event;
   }
 
   @Post()
-  createResource(@Body() input) {
-    return input;
+  createResource(@Body() input: CreateEventDto) {
+    const event = {
+      ...input,
+      when: new Date(input.when),
+      id: this.events.length + 1,
+    };
+    this.events.push(event);
+    return event;
   }
 
   @Patch(':id')
-  updateResource(@Param('id') id: [string, number], @Body() input) {
-    return {
-      id,
-      input: input,
+  updateResource(@Param('id') id: string, @Body() input: UpdateEventDto) {
+    const index = this.events.findIndex((event) => event.id === parseInt(id));
+    this.events[index] = {
+      ...this.events[index],
+      ...input,
+      when: input.when ? new Date(input.when) : this.events[index].when,
     };
+    return this.events[index];
   }
 
   @Delete(':id')
-  deleteResource(@Param('id') id: [string, number]) {
-    return id;
+  @HttpCode(204)
+  deleteResource(@Param('id') id) {
+    this.events = this.events.filter((event) => event.id === parseInt(id));
   }
 }
