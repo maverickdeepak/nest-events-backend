@@ -7,6 +7,7 @@ import {
   Param,
   Body,
   HttpCode,
+  ValidationPipe,
 } from '@nestjs/common';
 import { CreateEventDto } from './create-event.dto';
 import { UpdateEventDto } from './update-event.dto';
@@ -51,7 +52,9 @@ export class EventsController {
   }
 
   @Post()
-  async createResource(@Body() input: CreateEventDto) {
+  async createResource(
+    @Body(new ValidationPipe({ groups: ['create'] })) input: CreateEventDto,
+  ) {
     return await this.repository.save({
       ...input,
       when: new Date(input.when),
@@ -59,7 +62,10 @@ export class EventsController {
   }
 
   @Patch(':id')
-  async updateResource(@Param('id') id: number, @Body() input: UpdateEventDto) {
+  async updateResource(
+    @Param('id') id: number,
+    @Body(new ValidationPipe({ groups: ['update'] })) input: UpdateEventDto,
+  ) {
     const event = await this.repository.findOneBy({
       id: id,
     });
