@@ -8,6 +8,7 @@ import {
   Body,
   HttpCode,
   Logger,
+  NotFoundException,
 } from '@nestjs/common';
 import { CreateEventDto } from './create-event.dto';
 import { UpdateEventDto } from './update-event.dto';
@@ -52,6 +53,9 @@ export class EventsController {
     const event = await this.repository.findOneBy({
       id: id,
     });
+    if (!event) {
+      throw new NotFoundException(`Event with id ${id} not found.`);
+    }
     return event;
   }
 
